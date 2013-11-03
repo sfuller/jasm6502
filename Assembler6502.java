@@ -155,6 +155,8 @@ public class Assembler6502 implements SymbolConstant6502, AbstractAssembler {
 			new Symbol ("include", INCLUDE, NULL),
 			new Symbol (".include", INCLUDE, NULL),
 			new Symbol ("#include", INCLUDE, NULL),
+			new Symbol (".incbin", INCBIN, NULL),
+			new Symbol (".includebin", INCBIN, NULL),
 			new Symbol (".proc", PROC, NULL),
 			new Symbol (".scope", PROC, NULL),
 			new Symbol (".endproc", ENDPROC, NULL),
@@ -530,6 +532,56 @@ public class Assembler6502 implements SymbolConstant6502, AbstractAssembler {
 		mLexer = newLexer;
 		stack.push (newLexer);
 	}
+
+	/**
+	 * 	Gets the size of a file
+	 * @param fileName file name of file
+	 * @param stack stack that holds lexers.
+	 * @return byte size of file.
+	 */
+	public int getFileSize (String fileName) throws ParserException
+	{
+		File file = new File (fileName);
+		if (!file.exists ())
+			throw new ParserException ("Cannot open file " + fileName, mLexer);
+		return (int)file.length();
+	}
+	
+	/**
+	*	Returns the contents of a file as a vector.	 
+	*	@param fileName file name of file to include
+	*	@return binary data of file as a vector.
+	*/
+	public Vector getFileContents (String fileName) throws ParserException
+	{
+		File file = new File (fileName);
+		BufferedInputStream stream = null;
+		Vector vector = new Vector();
+		try {
+			stream = new BufferedInputStream (new FileInputStream (file));
+			int fileSize = (int)file.length();
+			byte[] fileData = new byte[fileSize];
+			int totalBytesRead = 0;
+			while(totalBytesRead < fileSize) {
+				int bytesRemaining = fileSize - totalBytesRead;
+				int bytesRead  = stream.read(fileData, totalBytesRead, bytesRemaining);
+				totalBytesRead += bytesRead;
+				for(int i = totalBytesRead - bytesRead; i < totalBytesRead; ++i)
+				{
+					vector.add( (Integer)(int)(fileData[i]) );
+				}
+			}
+			
+			return vector;
+		}
+		catch (FileNotFoundException e) {
+			throw new ParserException ("Could not find file " + fileName, mLexer);
+		}
+		catch (Exception e)
+		{
+			throw new ParserException ("Cannot open file " + fileName, mLexer);
+		}
+	}
 	
 	/**
 	*	Installs a label into symbol table
@@ -616,6 +668,11 @@ public class Assembler6502 implements SymbolConstant6502, AbstractAssembler {
 				}
 				else if (result == PARSERESULT_INCLUDE) {
 					includeFile (mParser.getSymbol ().getName (), lexerStack);
+				}
+				else if (result == PARSERESULT_INCLUDEBIN) {
+					int size = getFileSize(mParser.getSymbol ().getName());
+					ip += size;
+					++numOpcodes;
 				}
 				else if (result == PARSERESULT_UNDEF_STATEMENT) {
 					throw new ParserException ("Undefined statement", mLexer);
@@ -757,6 +814,13 @@ public class Assembler6502 implements SymbolConstant6502, AbstractAssembler {
 				}
 				else if (result == PARSERESULT_INCLUDE) {
 					includeFile (mParser.getSymbol ().getName (), lexerStack);
+				}
+				else if (result == PARSERESULT_INCLUDEBIN) {
+					Vector v =  getFileContents (mParser.getSymbol ().getName ());
+					int newIp = ip + v.size();
+					++numOpcodes;
+					byteSequenceToMachineCode (ip, v);
+					ip = newIp;
 				}
 				else if (result == PARSERESULT_UNDEF_STATEMENT) {
 					throw new ParserException ("Undefined statement", mLexer);

@@ -72,8 +72,9 @@ public interface SymbolConstant6502 {
 	public static final int BYTE = 0x82;
 	public static final int WORD = 0x83;
 	public static final int INCLUDE = 0x84;
-	public static final int PROC = 0x85;
-	public static final int ENDPROC = 0x86;
+	public static final int INCBIN = 0x85;
+	public static final int PROC = 0x86;
+	public static final int ENDPROC = 0x87;
 	
 	// other keywords
 	
@@ -249,8 +250,9 @@ public interface SymbolConstant6502 {
 	public static final int PARSERESULT_NEW_ORIGIN = 7;
 	public static final int PARSERESULT_EOF = 8;
 	public static final int PARSERESULT_INCLUDE = 9;
-	public static final int PARSERESULT_DATA = 10;
-	public static final int PARSERESULT_PROC = 11;
-	public static final int PARSERESULT_ENDPROC = 12;
+	public static final int PARSERESULT_INCLUDEBIN = 10;
+	public static final int PARSERESULT_DATA = 11;
+	public static final int PARSERESULT_PROC = 12;
+	public static final int PARSERESULT_ENDPROC = 13;
 
 }

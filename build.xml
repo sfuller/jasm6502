@@ -1,0 +1,18 @@
+<project default="all">
+
+    <target name="clean">
+        <delete dir="build"/>
+        <delete file="jasm6502.jar"/>
+    </target>
+
+    <target name="all">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="./" includes="AbstractAssembler.java, AbstractLexer.java, AbstractParser.java, AsciiTranslator.java, Assembler6502.java, C64LowerCaseTranslator.java, C64UpperCaseTranslator.java, Evaluator.java, InfixToPostfix.java, jasm6502.java, Lexer6502.java, LexerException.java, MachineCode6502.java, Namespace.java, Parser6502.java, ParserException.java, Symbol.java, SymbolConstant6502.java, SymbolTable.java"  destdir="build/classes"/>
+        <jar destfile="./jasm6502.jar" basedir="build/classes">
+        <manifest>
+            <attribute name="Main-Class" value="jasm6502"/>
+        </manifest>
+        </jar>
+    </target>
+
+</project>

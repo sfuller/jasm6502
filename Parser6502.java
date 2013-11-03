@@ -562,6 +562,24 @@ public class Parser6502 implements SymbolConstant6502, AbstractParser {
 	}
 	
 	/**
+	*	Try parse include binary directive (.incbin "somefile")
+	*	@param symbol The current symbol from lexer
+	*	@return true if sucessful
+	*/
+	private boolean ntIncludeBin (Symbol symbol) throws ParserException, LexerException
+	{
+		if(symbol.getType () == CHARSEQUENCE) {
+			mSymbol = new Symbol (mLexer.getCharSequence (), CHARSEQUENCE, NULL);
+		}
+		else throw new ParserException ("Expected name of include file, enclosed in doublequotes", mLexer);
+
+		if (!expectTerminal (LINEFEED))
+			throw new ParserException ("Unexpected end of statement", mLexer);
+		mLexer.getNext ();
+		return true;
+	}
+
+	/**
 	*	Try parse byte sequence (.byt x,x,x,"string",...)
 	*	@param symbol The current symbol from lexer
 	*	@return true if succesful
@@ -816,6 +834,10 @@ public class Parser6502 implements SymbolConstant6502, AbstractParser {
 			else if (type == INCLUDE) {
 				ntInclude (mLexer.getNext ());
 				mParseResult = PARSERESULT_INCLUDE;
+			}
+			else if (type == INCBIN) {
+				ntIncludeBin (mLexer.getNext ());
+				mParseResult = PARSERESULT_INCLUDEBIN;
 			}
 			else if (type == OPERATOR && symbol.getValue () == '*') {
 				// synonymous with org if assign follows (for many assemblers)
